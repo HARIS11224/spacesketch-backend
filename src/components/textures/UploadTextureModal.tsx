@@ -57,7 +57,7 @@ const handleSubmit = async (e?: React.FormEvent) => {
   formData.append('preview', imageFile);
 
   try {
-    const response = await fetch('http://localhost:5000/api/textures', {
+    const response = await fetch('https://spacesketch-backend-production.up.railway.app/api/textures/api/textures', {
       method: 'POST',
       body: formData,
     });

@@ -65,13 +65,6 @@ const Dashboard: React.FC = () => {
       trend: 'up' as const,
       icon: <BarChart3 className="text-amber-500" size={24} />
     },
-    { 
-      title: 'User Reviews', 
-      value: statsData.reviews.toString(), 
-      change: '+18%', 
-      trend: 'up' as const,
-      icon: <Star className="text-green-500" size={24} />
-    },
   ];
 
   return (
@@ -91,7 +84,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentReviewsWidget />
+       
         <TopAssetsWidget type={'texture'}/>
       </div>
 

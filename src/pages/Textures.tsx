@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Plus, MoreHorizontal, ArrowUpDown, Eye } from 'lucide-react';
+import { Search, Plus, MoreHorizontal, ArrowUpDown, Eye, Trash2 } from 'lucide-react';
 import UploadTextureModal from '../components/textures/UploadTextureModal';
 import TexturePreviewModal from '../components/textures/TexturePreviewModal';
 import axios from 'axios';
@@ -13,7 +13,8 @@ interface Texture {
   uploadDate: string;
   preview: string; // full URL to image
 }
-const baseURL = 'http://localhost:5000';  
+
+const baseURL = 'https://spacesketch-backend-production.up.railway.app';
 
 const Textures: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -43,9 +44,8 @@ const Textures: React.FC = () => {
   const fetchTextures = async () => {
     try {
       setLoading(true);
-      const response = await axios.get<Texture[]>('http://localhost:5000/api/textures');
+      const response = await axios.get<Texture[]>(`${baseURL}/api/textures`);
       setTextures(response.data);
-      console.log(response.data);
       setLoading(false);
     } catch (err) {
       console.error('Error fetching textures:', err);
@@ -56,10 +56,11 @@ const Textures: React.FC = () => {
 
   const filterAndSortTextures = () => {
     const query = searchQuery.toLowerCase();
-    let items = textures.filter((item) =>
-      item.name.toLowerCase().includes(query) ||
-      item.type.toLowerCase().includes(query) ||
-      item.tags.some(tag => tag.toLowerCase().includes(query))
+    let items = textures.filter(
+      (item) =>
+        item.name.toLowerCase().includes(query) ||
+        item.type.toLowerCase().includes(query) ||
+        item.tags.some((tag) => tag.toLowerCase().includes(query))
     );
 
     items = items.sort((a, b) => {
@@ -79,6 +80,18 @@ const Textures: React.FC = () => {
   const handlePreview = (item: Texture) => {
     setPreviewTexture(item);
     setIsPreviewModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm('Are you sure you want to delete this texture?')) return;
+
+    try {
+      await axios.delete(`${baseURL}/api/textures/${id}`);
+      setTextures((prev) => prev.filter((texture) => texture._id !== id));
+    } catch (error) {
+      console.error('Error deleting texture:', error);
+      alert('Failed to delete the texture.');
+    }
   };
 
   return (
@@ -132,11 +145,11 @@ const Textures: React.FC = () => {
               >
                 <div className="aspect-square overflow-hidden bg-gray-100 dark:bg-gray-700 relative">
                   <img
-                   src={`${baseURL}${item.preview}`} 
+                    src={`${baseURL}${item.preview}`}
                     alt={item.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = '/placeholder.png'; // fallback image
+                      e.currentTarget.src = '/placeholder.png';
                     }}
                   />
                   <span
@@ -179,12 +192,21 @@ const Textures: React.FC = () => {
                       <span className="font-medium text-gray-700 dark:text-gray-300">{item.downloads}</span>{' '}
                       downloads
                     </span>
-                    <button
-                      onClick={() => handlePreview(item)}
-                      className="flex items-center gap-1 text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium"
-                    >
-                      <Eye size={14} /> Preview
-                    </button>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handlePreview(item)}
+                        className="flex items-center gap-1 text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 dark:hover:text-teal-300 font-medium"
+                      >
+                        <Eye size={14} /> Preview
+                      </button>
+
+                      <button
+                        onClick={() => handleDelete(item._id)}
+                        className="flex items-center gap-1 text-xs text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium"
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -192,34 +214,32 @@ const Textures: React.FC = () => {
           </div>
 
           {filteredTextures.length === 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 text-center">
-              <p className="text-gray-500 dark:text-gray-400">No texture items found</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm text-center p-6 text-gray-600 dark:text-gray-400">
+              No textures found.
             </div>
           )}
 
-          {/* Pagination controls */}
-          <div className="flex justify-between items-center mt-4">
-            <div className="text-sm text-gray-600 dark:text-gray-300">
-              Showing <span className="font-medium">{paginatedTextures.length}</span> of{' '}
-              <span className="font-medium">{filteredTextures.length}</span> textures
-            </div>
-            <div className="flex items-center space-x-2">
+          {totalPages > 1 && (
+            <div className="flex justify-center space-x-4 mt-6">
               <button
-                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                className="px-3 py-1 border rounded disabled:opacity-50"
               >
                 Previous
               </button>
+              <span className="px-3 py-1 border rounded bg-gray-100 dark:bg-gray-700">
+                Page {currentPage} of {totalPages}
+              </span>
               <button
-                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
                 disabled={currentPage === totalPages}
-                className="px-3 py-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 text-sm disabled:opacity-50"
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                className="px-3 py-1 border rounded disabled:opacity-50"
               >
                 Next
               </button>
             </div>
-          </div>
+          )}
         </>
       )}
 

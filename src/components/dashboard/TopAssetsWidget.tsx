@@ -70,13 +70,7 @@ const TopAssetsWidget: React.FC<Props> = ({ type }) => {
         <p className="font-medium text-gray-800 dark:text-white">{asset.name}</p>
         <p className="text-xs text-gray-500 dark:text-gray-400">{asset.type}</p>
       </div>
-      <div className="flex items-center">
-        <div className="mr-4 text-right">
-          <p className="text-sm font-medium text-gray-800 dark:text-white">{asset.downloads}</p>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Downloads</p>
-        </div>
-        <Download size={18} className="text-gray-400 dark:text-gray-500" />
-      </div>
+      
     </div>
   );
 })}

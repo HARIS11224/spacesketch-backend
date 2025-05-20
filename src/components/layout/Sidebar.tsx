@@ -22,7 +22,6 @@ const Sidebar: React.FC<SidebarProps> = ({ currentPage, setCurrentPage }) => {
     { id: 'users', name: 'Users', icon: <Users size={20} /> },
     { id: 'furniture', name: 'Furniture', icon: <Sofa size={20} /> },
     { id: 'textures', name: 'Textures', icon: <PaintBucket size={20} /> },
-    { id: 'reviews', name: 'Reviews', icon: <Star size={20} /> },
   ];
 
   return (
